@@ -9,10 +9,10 @@ jobs:
       - image: python:3.6.1
         environment:
           FLASK_CONFIG: testing
-          TEST_DATABASE_URL: postgresql://ubuntu@localhost/test?sslmode=disable
+          TEST_DATABASE_URL: postgresql://localhost/test
       - image: postgres:9.6.2
         environment:
-          POSTGRES_USER: ubuntu
+          POSTGRES_USER: postgres
           POSTGRES_DB: test
           POSTGRES_PASSWORD: ""
 
