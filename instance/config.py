@@ -8,6 +8,12 @@ class Config(object):
     SECRET = os.getenv('SECRET')
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
+    # Flask-Restplus settings
+    RESTPLUS_SWAGGER_UI_DOC_EXPANSION = 'list'
+    RESTPLUS_VALIDATE = True
+    RESTPLUS_MASK_SWAGGER = False
+    RESTPLUS_ERROR_404_HELP = False
+
 
 class DevelopmentConfig(Config):
     """Configurations for Development."""
