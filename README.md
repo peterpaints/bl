@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/peterpaints/bl.svg?branch=master)](https://travis-ci.org/peterpaints/bl)
+[![Build Status](https://travis-ci.org/peterpaints/bl.svg?branch=develop)](https://travis-ci.org/peterpaints/bl)
 [![Coverage Status](https://coveralls.io/repos/github/peterpaints/bl/badge.svg?branch=develop)](https://coveralls.io/github/peterpaints/bl?branch=develop)
 # Create-A-Bucketlist
 
