@@ -82,7 +82,7 @@ class Bucketlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     items = db.relationship(
-        'Item', order_by='Item.id', cascade="all, delete-orphan", backref='bucketlists')
+        'Item', order_by='Item.id', cascade="all, delete-orphan", backref='bucketlists', lazy='dynamic')
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
@@ -123,12 +123,12 @@ class Item(db.Model):
         db.DateTime, default=db.func.current_timestamp(),
         onupdate=db.func.current_timestamp())
     done = db.Column(db.Boolean, default=False)
-    bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id'), nullable=False)
+    bucketlist_id = db.Column(db.Integer, db.ForeignKey(Bucketlist.id), nullable=False)
 
-    def __init__(self, name, done=False):
+    def __init__(self, name, bucketlist_id):
         """Initialize the item with a name and its done status."""
         self.name = name
-        self.done = done
+        self.bucketlist_id = bucketlist_id
 
     def save(self):
         db.session.add(self)
