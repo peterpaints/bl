@@ -1,7 +1,7 @@
 from flask_restplus import fields
 from api.restplus import api
 
-bucketitems = api.model('Bucketlists', {
+bucketitems = api.model('Items', {
     'id': fields.Integer,
     'name': fields.String(required=True, description='The name of a bucketlist item'),
     'bucketlist_id': fields.Integer,
@@ -10,11 +10,16 @@ bucketitems = api.model('Bucketlists', {
     'done': fields.Boolean
 })
 
-create_bucket = api.model('Bucketlists', {
+create_bucketoritem = api.model('Create', {
     'name': fields.String(required=True, description='The name of a bucketlist')
 })
 
-buckets = api.model('Items', {
+edit_item = api.model('Edit', {
+    'name': fields.String(required=True, description='The name of a bucketlist'),
+    'done': fields.Boolean(default=False)
+})
+
+buckets = api.model('Bucketlists', {
     'id': fields.Integer,
     'name': fields.String(required=True, description='The name of a bucketlist'),
     'items': fields.List(fields.Nested(bucketitems)),
