@@ -1,6 +1,6 @@
 from flask import request
 from flask_restplus import Resource, abort
-from api.bucketlists.serializers import create_bucket, buckets
+from api.bucketlists.serializers import create_bucketoritem, buckets
 from api.bucketlists.parsers import pagination_arguments
 from api.restplus import api
 from models.models import Bucketlist, User
@@ -43,7 +43,7 @@ class BucketListEndPoint(Resource):
                 # user is not legit, so the payload is an error message
                 abort(401, user_id)
 
-    @api.expect(create_bucket)
+    @api.expect(create_bucketoritem)
     @api.marshal_with(buckets)
     def post(self):
         # Get the access token from the header
@@ -91,7 +91,7 @@ class BucketlistManipulation(Resource):
             else:
                 abort(401, user_id)
 
-    @api.expect(create_bucket)
+    @api.expect(create_bucketoritem)
     @api.marshal_with(buckets)
     def put(self, id):
 
