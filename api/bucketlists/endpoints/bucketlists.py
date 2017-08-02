@@ -33,15 +33,12 @@ class BucketListEndPoint(Resource):
                 # GET all the bucketlists created by this user
                 try:
                     bucketlists_query = Bucketlist.query.filter_by(created_by=user_id)
-                    if not bucketlists_query:
-                        abort(404, 'There are no bucketlists')
+                    if find:
+                        bucketlists = bucketlists_query.filter(Bucketlist.name.ilike('%' + find + '%'))
+                        return bucketlists.paginate(page, per_page, error_out=False).items, 200
                     else:
-                        if find:
-                            bucketlists = bucketlists_query.filter(Bucketlist.name.ilike('%' + find + '%'))
-                            return bucketlists.paginate(page, per_page, error_out=False).items, 200
-                        else:
-                            bucketlists = bucketlists_query.paginate(page, per_page, error_out=False)
-                            return bucketlists.items, 200
+                        bucketlists = bucketlists_query.paginate(page, per_page, error_out=False)
+                        return bucketlists.items, 200
                 except Exception as e:
                     abort(404, str(e))
             else:
@@ -87,7 +84,7 @@ class BucketlistManipulation(Resource):
             if not isinstance(user_id, str):
                 # If the id is not a string(error), we have a user id
                 # Get the bucketlist with the id specified from the URL (<int:id>)
-                bucketlist = Bucketlist.query.filter_by(id=id).first()
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
                 if bucketlist:
                     return bucketlist, 200
                     # There is no bucketlist with this ID for this User, so
@@ -110,7 +107,9 @@ class BucketlistManipulation(Resource):
             if not isinstance(user_id, str):
 
                 name = request.json.get('name')
-                bucketlist = Bucketlist.query.filter_by(id=id).first()
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                if not bucketlist:
+                    abort(404, 'This user has no bucketlist with id ' + str(id))
                 if name:
                     if bucketlist:
                         bucketlist.name = name
@@ -133,13 +132,12 @@ class BucketlistManipulation(Resource):
             user_id = User.decode_token(access_token)
 
             if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(id=id).first()
-
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                if not bucketlist:
+                    abort(404, 'This user has no bucketlist with id ' + str(id))
                 if bucketlist:
-
                     bucketlist.delete()
                     return 'Bucketlist id ' + str(id) + ' successfully deleted', 200
-
                 else:
                     abort(404, 'There is no bucketlist with id ' + str(id))
         else:
