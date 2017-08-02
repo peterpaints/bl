@@ -1,3 +1,5 @@
+import re
+
 from flask import request
 from models.models import User
 from flask_restplus import Resource
@@ -7,6 +9,7 @@ ns = api.namespace('auth', description='User authentication')
 
 
 @ns.route('/register')
+# @api.response(409, 'User already exists')
 class Registration(Resource):
     """This is where we register a new user."""
 
@@ -17,31 +20,45 @@ class Registration(Resource):
         post_data = request.json
         email = post_data.get('email')
         password = post_data.get('password')
-        # Query to see if the user already exists
-        user = User.query.filter_by(email=email).first()
 
-        if not user:
-            # There is no user so we'll try to register them
-            try:
-                user = User(email=email, password=password)
-                user.save()
-
-                response = {
-                    'message': 'You registered successfully. Please log in.'
-                }
-                return response, 201
-
-            except Exception as e:
-                response = {
-                    'message': str(e)
-                }
-                return response, 401
-        else:
-            # There is an existing user.
+        if not email_is_valid(email):
             response = {
-                'message': 'User already exists. Please login.'
+                'message': 'Your email is invalid. Please enter a valid email.'
             }
-            return response, 409
+            return response, 400
+
+        elif not password_is_valid(password):
+            response = {
+                'message': 'Your password should contain at least one number, one lowercase, one uppercase letter and at least six characters'
+            }
+            return response, 400
+
+        else:
+            # Query to see if the user already exists
+            user = User.query.filter_by(email=email).first()
+
+            if not user:
+                # There is no user so we'll try to register them
+                try:
+                    user = User(email=email, password=password)
+                    user.save()
+
+                    response = {
+                        'message': 'You registered successfully. Please log in.'
+                    }
+                    return response, 201
+
+                except Exception as e:
+                    response = {
+                        'message': str(e)
+                    }
+                    return response, 401
+            else:
+                # There is an existing user.
+                response = {
+                    'message': 'User already exists. Please login.'
+                }
+                return response, 409
 
 
 @ns.route('/login')
@@ -61,7 +78,7 @@ class Login(Resource):
             user = User.query.filter_by(email=email).first()
 
             # Try to authenticate the found user using their password
-            if user and user.password_is_valid(password):
+            if user and user.is_registered_password(password):
                 # Generate the access token. This will be used as the authorization header
                 access_token = user.generate_token(user.id)
                 if access_token:
@@ -84,3 +101,13 @@ class Login(Resource):
             }
             # Return a server error using the HTTP Error Code 500 (Internal Server Error)
             return response, 500
+
+
+def email_is_valid(email):
+    """Check that the user's email is valid."""
+    return re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
+
+
+def password_is_valid(password):
+    """Check that the user's password is valid."""
+    return re.match(r"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}", password)
