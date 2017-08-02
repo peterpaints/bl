@@ -2,7 +2,6 @@ from flask import request
 from api import bucketlists_namespace
 from flask_restplus import Resource, abort
 from api.bucketlists.serializers import bucketitems, create_bucketoritem, edit_item
-from api.bucketlists.parsers import pagination_arguments
 from api.restplus import api
 from models.models import User, Item
 
@@ -17,6 +16,7 @@ class ItemsEndPoint(Resource):
     @api.expect(create_bucketoritem)
     @api.marshal_with(bucketitems)
     def post(self, id):
+        """Create a bucketlist item under the bucketlist with the given id."""
         # Get the access token from the header
         access_token = request.headers.get('Authorization')
 
@@ -29,12 +29,10 @@ class ItemsEndPoint(Resource):
 
                 name = request.json.get('name')
                 if name:
-                    # bucketlist = Bucketlist.get_all(id)
                     item = Item(name=name, bucketlist_id=id)
                     item.save()
 
                     return item, 201
-                # return name, 201
 
 
 @ns.route('/<int:id>/items/<int:item_id>')
@@ -44,8 +42,8 @@ class ItemsManipulation(Resource):
     @api.expect(edit_item)
     @api.marshal_with(bucketitems)
     def put(self, id, item_id):
+        """Edit a bucketlist item's name or done status."""
         # get the access token from the authorization header
-
         access_token = request.headers.get('Authorization')
 
         if access_token:
@@ -71,7 +69,7 @@ class ItemsManipulation(Resource):
                 abort(401, user_id)
 
     def delete(self, id, item_id):
-
+        """Delete a bucketlist item under the bucketlist with the given id."""
         access_token = request.headers.get('Authorization')
 
         if access_token:
