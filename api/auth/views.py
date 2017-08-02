@@ -9,7 +9,10 @@ ns = api.namespace('auth', description='User authentication')
 
 
 @ns.route('/register')
-# @api.response(409, 'User already exists')
+@api.response(400, 'Your email is invalid. Please enter a valid email.')
+@api.response(400, 'Your password should contain at least one number, one lowercase, one uppercase letter and at least six characters')
+@api.response(201, 'You registered successfully. Please log in.')
+@api.response(409, 'User already exists. Please log in.')
 class Registration(Resource):
     """This is where we register a new user."""
 
@@ -62,6 +65,8 @@ class Registration(Resource):
 
 
 @ns.route('/login')
+@api.response(200, 'You logged in successfully.')
+@api.response(401, 'Invalid email or password. Please try again.')
 class Login(Resource):
     """This handles user login and access token generation."""
 
@@ -90,7 +95,7 @@ class Login(Resource):
             else:
                 # User does not exist. Therefore, we return an error message
                 response = {
-                    'message': 'Invalid email or password, Please try again'
+                    'message': 'Invalid email or password. Please try again'
                 }
                 return response, 401
 
