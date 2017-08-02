@@ -24,7 +24,7 @@ class User(db.Model):
         self.email = email
         self.password = Bcrypt().generate_password_hash(password).decode()
 
-    def password_is_valid(self, password):
+    def is_registered_password(self, password):
         """
         Checks the password against its hash to validates the user's password
         """
@@ -135,9 +135,9 @@ class Item(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all(user_id):
+    def get_all(bucketlist_id):
         """This method gets all the bucketlist items for a given bucketlist."""
-        return Bucketlist.query.filter_by(bucketlist_id=bucketlist_id)
+        return Item.query.filter_by(bucketlist_id=bucketlist_id)
 
     def delete(self):
         db.session.delete(self)
