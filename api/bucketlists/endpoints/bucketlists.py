@@ -28,6 +28,7 @@ class BucketListEndPoint(Resource):
                 args = pagination_arguments.parse_args(request)
                 page = args.get('page', 1)
                 per_page = args.get('per_page', 5)
+                find = args.get('q')
                 # Go ahead and handle the request, the user is authenticated
                 # GET all the bucketlists created by this user
                 try:
@@ -35,8 +36,12 @@ class BucketListEndPoint(Resource):
                     if not bucketlists_query:
                         abort(404, 'There are no bucketlists')
                     else:
-                        bucketlists = bucketlists_query.paginate(page, per_page, error_out=False)
-                        return bucketlists.items, 200
+                        if find:
+                            bucketlists = bucketlists_query.filter(Bucketlist.name.ilike('%' + find + '%'))
+                            return bucketlists.paginate(page, per_page, error_out=False).items, 200
+                        else:
+                            bucketlists = bucketlists_query.paginate(page, per_page, error_out=False)
+                            return bucketlists.items, 200
                 except Exception as e:
                     abort(404, str(e))
             else:
@@ -46,6 +51,7 @@ class BucketListEndPoint(Resource):
     @api.expect(create_bucketoritem)
     @api.marshal_with(buckets)
     def post(self):
+        """Create a bucketlist."""
         # Get the access token from the header
         access_token = request.headers.get('Authorization')
 
@@ -70,8 +76,8 @@ class BucketlistManipulation(Resource):
 
     @api.marshal_with(buckets)
     def get(self, id):
+        """Return the bucketlist with the provided id."""
         # get the access token from the authorization header
-
         access_token = request.headers.get('Authorization')
 
         if access_token:
@@ -94,7 +100,7 @@ class BucketlistManipulation(Resource):
     @api.expect(create_bucketoritem)
     @api.marshal_with(buckets)
     def put(self, id):
-
+        """Edit the name of a bucketlist."""
         access_token = request.headers.get('Authorization')
 
         if access_token:
@@ -119,7 +125,7 @@ class BucketlistManipulation(Resource):
                 abort(401, user_id)
 
     def delete(self, id):
-
+        """Delete a particular bucketlist."""
         access_token = request.headers.get('Authorization')
 
         if access_token:
@@ -130,8 +136,8 @@ class BucketlistManipulation(Resource):
                 bucketlist = Bucketlist.query.filter_by(id=id).first()
 
                 if bucketlist:
-                    bucketlist.delete()
 
+                    bucketlist.delete()
                     return 'Bucketlist id ' + str(id) + ' successfully deleted', 200
 
                 else:
