@@ -3,7 +3,7 @@ from api import bucketlists_namespace
 from flask_restplus import Resource, abort
 from api.bucketlists.serializers import bucketitems, create_bucketoritem, edit_item
 from api.restplus import api
-from models.models import User, Item
+from models.models import User, Item, Bucketlist
 
 
 ns = bucketlists_namespace
@@ -53,18 +53,22 @@ class ItemsManipulation(Resource):
             if not isinstance(user_id, str):
                 # If the id is not a string(error), we have a user id
                 # Get the bucketlist with the id specified from the URL (<int:id>)
-                item = Item.query.filter_by(id=item_id, bucketlist_id=id).first()
-                name = request.json.get('name')
-                done = request.json.get('done')
-                if item:
-                    item.name = name
-                    item.done = done
-                    item.save()
-                    return item, 200
-                    # There is no bucketlist with this ID for this User, so
-                    # Raise an HTTPException with a 404 not found status code
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                if not bucketlist:
+                    abort(404, 'This user has no bucketlist with id ' + str(id))
                 else:
-                    abort(404, 'There is no bucketlist item with id ' + str(id))
+                    item = Item.query.filter_by(id=item_id, bucketlist_id=bucketlist.id).first()
+                    name = request.json.get('name')
+                    done = request.json.get('done')
+                    if item:
+                        item.name = name
+                        item.done = done
+                        item.save()
+                        return item, 200
+                        # There is no bucketlist with this ID for this User, so
+                        # Raise an HTTPException with a 404 not found status code
+                    else:
+                        abort(404, 'There is no bucketlist item with id ' + str(item_id))
             else:
                 abort(401, user_id)
 
@@ -77,13 +81,17 @@ class ItemsManipulation(Resource):
             user_id = User.decode_token(access_token)
 
             if not isinstance(user_id, str):
-                item = Item.query.filter_by(id=item_id, bucketlist_id=id).first()
-
-                if item:
-                    item.delete()
-                    return 'Item id ' + str(id) + ' successfully deleted', 200
-
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                if not bucketlist:
+                    abort(404, 'This user has no bucketlist with id ' + str(id))
                 else:
-                    abort(404, 'There is no item with id ' + str(id))
+                    item = Item.query.filter_by(id=item_id, bucketlist_id=bucketlist.id).first()
+
+                    if item:
+                        item.delete()
+                        return 'Item id ' + str(id) + ' successfully deleted', 200
+
+                    else:
+                        abort(404, 'There is no item with id ' + str(item_id))
         else:
             abort(401, user_id)
