@@ -27,8 +27,38 @@ class AuthTestCase(unittest.TestCase):
                                headers={'content-type': 'application/json'})
 
         result = json.loads(res.data.decode())
-        self.assertEqual(result['message'], "You registered successfully. Please log in.")
+        self.assertEqual(result['message'], 'You registered successfully. Please log in.')
         self.assertEqual(res.status_code, 201)
+
+    def test_registration_with_invalid_email(self):
+        """Test that a user cannot register with an invalid email address."""
+        data = {
+            "email": "123456",
+            "password": "Testpassw0rd"
+        }
+
+        res = self.client.post('api/v1/auth/register',
+                               data=json.dumps(data),
+                               headers={'content-type': 'application/json'})
+
+        result = json.loads(res.data.decode())
+        self.assertEqual(result['message'], 'Your email is invalid. Please enter a valid email.')
+        self.assertEqual(res.status_code, 400)
+
+    def test_registration_with_invalid_password(self):
+        """Test that a user cannot register with an invalid password."""
+        data = {
+            "email": "test@example.com",
+            "password": "testpassw0rd"
+        }
+
+        res = self.client.post('api/v1/auth/register',
+                               data=json.dumps(data),
+                               headers={'content-type': 'application/json'})
+
+        result = json.loads(res.data.decode())
+        self.assertEqual(result['message'], 'Your password should contain at least one number, one lowercase, one uppercase letter and at least six characters')
+        self.assertEqual(res.status_code, 400)
 
     def test_already_registered_user(self):
         """Test that a user cannot be registered twice."""
