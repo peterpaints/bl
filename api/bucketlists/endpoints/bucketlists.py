@@ -10,6 +10,8 @@ ns = api.namespace('bucketlists', description='Bucketlist manipulation')
 
 
 @ns.route('/')
+@api.response(201, 'Successfully created.')
+@api.response(404, 'There is no bucketlist with id ~')
 @api.header('Authorization', 'JSON Web Token', required=True)
 class BucketListEndPoint(Resource):
 
