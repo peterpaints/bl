@@ -13,7 +13,6 @@ ns = bucketlists_namespace
 
 @ns.route('/<int:id>/items')
 @api.response(201, 'Successfully created.')
-@api.response(404, 'There is no bucketlist with id ~')
 @api.header('Authorization', 'JSON Web Token', required=True)
 class ItemsEndPoint(Resource):
 
@@ -31,6 +30,7 @@ class ItemsEndPoint(Resource):
 
 
 @ns.route('/<int:id>/items/<int:item_id>')
+@api.response(404, 'There is no bucketlist with id ~')
 @api.header('Authorization', 'JSON Web Token', required=True)
 class ItemsManipulation(Resource):
 
