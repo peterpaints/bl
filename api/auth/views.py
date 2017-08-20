@@ -12,8 +12,7 @@ ns = api.namespace('auth', description='User authentication')
 @ns.route('/register')
 @api.response(400, 'Your email is invalid. Please enter a valid email.')
 @api.response(400, 'Your password should contain at least one number, \
-                    one lowercase, one uppercase letter and at least \
-                    six characters')
+one lowercase, one uppercase letter and at least six characters')
 @api.response(201, 'You registered successfully. Please log in.')
 @api.response(409, 'User already exists. Please log in.')
 class Registration(Resource):
@@ -35,8 +34,7 @@ class Registration(Resource):
         elif not password_is_valid(password):
             response = {
                 'message': 'Your password should contain at least one number, \
-                            one lowercase, one uppercase letter and at least \
-                            six characters'
+one lowercase, one uppercase letter and at least six characters'
             }
             return response, 400
 
