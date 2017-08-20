@@ -1,34 +1,20 @@
-import unittest
 import json
-from api import create_app, db
+
+from base import BaseTestCase
 
 
-class AuthTestCase(unittest.TestCase):
+class AuthTestCase(BaseTestCase):
     """Test case for the authentication blueprint."""
-
-    def setUp(self):
-        """Set up test variables."""
-        self.app = create_app(config_name="testing")
-        self.client = self.app.test_client()
-        self.user_data = {
-            "email": "johndoe@test.com",
-            "password": "Testpassw0rd"
-        }
-
-        with self.app.app_context():
-            db.session.close()
-            db.drop_all()
-            db.create_all()
 
     def test_registration(self):
         """Test user registration works as designed."""
-        res = self.client.post('api/v1/auth/register',
-                               data=json.dumps(self.user_data),
-                               headers={'content-type': 'application/json'})
+        response = self.register_user()
 
-        result = json.loads(res.data.decode())
-        self.assertEqual(result['message'], 'You registered successfully. Please log in.')
-        self.assertEqual(res.status_code, 201)
+        result = json.loads(response.data.decode())
+
+        self.assertEqual(result['message'],
+                         'You registered successfully. Please log in.')
+        self.assertEqual(response.status_code, 201)
 
     def test_registration_with_invalid_email(self):
         """Test that a user cannot register with an invalid email address."""
@@ -42,7 +28,9 @@ class AuthTestCase(unittest.TestCase):
                                headers={'content-type': 'application/json'})
 
         result = json.loads(res.data.decode())
-        self.assertEqual(result['message'], 'Your email is invalid. Please enter a valid email.')
+
+        self.assertEqual(result['message'],
+                         'Your email is invalid. Please enter a valid email.')
         self.assertEqual(res.status_code, 400)
 
     def test_registration_with_invalid_password(self):
@@ -57,38 +45,36 @@ class AuthTestCase(unittest.TestCase):
                                headers={'content-type': 'application/json'})
 
         result = json.loads(res.data.decode())
-        self.assertEqual(result['message'], 'Your password should contain at least one number, one lowercase, one uppercase letter and at least six characters')
+
+        self.assertEqual(result['message'],
+                         'Your password should contain at least one number, \
+one lowercase, one uppercase letter and at least six characters')
         self.assertEqual(res.status_code, 400)
 
     def test_already_registered_user(self):
         """Test that a user cannot be registered twice."""
-        res = self.client.post('api/v1/auth/register',
-                               data=json.dumps(self.user_data),
-                               headers={'content-type': 'application/json'})
-        self.assertEqual(res.status_code, 201)
+        response = self.register_user()
 
-        second_res = self.client.post('api/v1/auth/register',
-                                      data=json.dumps(self.user_data),
-                                      headers={'content-type': 'application/json'})
-        self.assertEqual(second_res.status_code, 409)
+        self.assertEqual(response.status_code, 201)
 
-        result = json.loads(second_res.data.decode())
-        self.assertEqual(result['message'], "User already exists. Please login.")
+        second_response = self.register_user()
+
+        self.assertEqual(second_response.status_code, 409)
+
+        result = json.loads(second_response.data.decode())
+
+        self.assertEqual(result['message'],
+                         "User already exists. Please login.")
 
     def test_user_login(self):
         """Test registered user can login."""
-        res = self.client.post('api/v1/auth/register',
-                               data=json.dumps(self.user_data),
-                               headers={'content-type': 'application/json'})
-        self.assertEqual(res.status_code, 201)
+        self.register_user()
+        login_response = self.login_user()
 
-        login_res = self.client.post('api/v1/auth/login',
-                                     data=json.dumps(self.user_data),
-                                     headers={'content-type': 'application/json'})
+        result = json.loads(login_response.data.decode())
 
-        result = json.loads(login_res.data.decode())
         self.assertEqual(result['message'], "You logged in successfully.")
-        self.assertEqual(login_res.status_code, 200)
+        self.assertEqual(login_response.status_code, 200)
         self.assertTrue(result['access_token'])
 
     def test_non_registered_user_login(self):
@@ -98,21 +84,12 @@ class AuthTestCase(unittest.TestCase):
             'password': 'nope'
         }
 
-        res = self.client.post('api/v1/auth/login',
-                               data=json.dumps(not_a_user),
-                               headers={'content-type': 'application/json'})
+        response = self.client.post('api/v1/auth/login',
+                                    data=json.dumps(not_a_user),
+                                    headers={'content-type': 'application/json'})
 
-        result = json.loads(res.data.decode())
-        self.assertEqual(res.status_code, 401)
-        self.assertEqual(result['message'], "Invalid email or password. Please try again")
+        result = json.loads(response.data.decode())
 
-    def tearDown(self):
-        """Teardown all initialized variables."""
-        with self.app.app_context():
-            # drop all tables
-            db.session.remove()
-            db.drop_all()
-
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(result['message'],
+                         "Invalid email or password. Please try again")
