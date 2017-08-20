@@ -28,12 +28,16 @@ class BucketListEndPoint(Resource):
 
         # GET all the bucketlists created by this user
         try:
-            bucketlists_query = Bucketlist.query.filter_by(created_by=request.user_id)
+            bucketlists_query = Bucketlist.query.filter_by(
+                                created_by=request.user_id)
             if find:
-                bucketlists = bucketlists_query.filter(Bucketlist.name.ilike('%' + find + '%'))
-                return bucketlists.paginate(page, per_page, error_out=False).items, 200
+                bucketlists = bucketlists_query.filter(
+                                Bucketlist.name.ilike('%' + find + '%'))
+                return bucketlists.paginate(page, per_page,
+                                            error_out=False).items, 200
             else:
-                bucketlists = bucketlists_query.paginate(page, per_page, error_out=False)
+                bucketlists = bucketlists_query.paginate(page, per_page,
+                                                         error_out=False)
                 return bucketlists.items, 200
         except Exception as e:
             abort(404, str(e))
@@ -43,7 +47,6 @@ class BucketListEndPoint(Resource):
     @api.marshal_with(buckets)
     def post(self):
         """Create a bucketlist."""
-
         name = request.json.get('name')
         if name:
             bucketlist = Bucketlist(name=name, created_by=request.user_id)
@@ -60,9 +63,10 @@ class BucketlistManipulation(Resource):
     @api.marshal_with(buckets)
     def get(self, id):
         """Return the bucketlist with the provided id."""
-
         # Get the bucketlist with the id specified from the URL (<int:id>)
-        bucketlist = Bucketlist.query.filter_by(id=id, created_by=request.user_id).first()
+        bucketlist = Bucketlist.query.filter_by(id=id,
+                                                created_by=request.user_id)
+        bucketlist = bucketlist.first()
         if bucketlist:
             return bucketlist, 200
             # There is no bucketlist with this ID for this User, so
@@ -75,9 +79,10 @@ class BucketlistManipulation(Resource):
     @api.marshal_with(buckets)
     def put(self, id):
         """Edit the name of a bucketlist."""
-
         name = request.json.get('name')
-        bucketlist = Bucketlist.query.filter_by(id=id, created_by=request.user_id).first()
+        bucketlist = Bucketlist.query.filter_by(id=id,
+                                                created_by=request.user_id)
+        bucketlist = bucketlist.first()
         if not bucketlist:
             abort(404, 'This user has no bucketlist with id ' + str(id))
         if name:
@@ -89,8 +94,9 @@ class BucketlistManipulation(Resource):
     @check_access_token
     def delete(self, id):
         """Delete a particular bucketlist."""
-
-        bucketlist = Bucketlist.query.filter_by(id=id, created_by=request.user_id).first()
+        bucketlist = Bucketlist.query.filter_by(id=id,
+                                                created_by=request.user_id)
+        bucketlist = bucketlist.first()
         if not bucketlist:
             abort(404, 'This user has no bucketlist with id ' + str(id))
         else:
