@@ -1,16 +1,19 @@
 import re
 
 from flask import request
-from models.models import User
+
+from api.bucketlists.serializers import api, email_and_password
 from flask_restplus import Resource
-from api.bucketlists.serializers import email_and_password, api
+from models.models import User
 
 ns = api.namespace('auth', description='User authentication')
 
 
 @ns.route('/register')
 @api.response(400, 'Your email is invalid. Please enter a valid email.')
-@api.response(400, 'Your password should contain at least one number, one lowercase, one uppercase letter and at least six characters')
+@api.response(400, 'Your password should contain at least one number, \
+                    one lowercase, one uppercase letter and at least \
+                    six characters')
 @api.response(201, 'You registered successfully. Please log in.')
 @api.response(409, 'User already exists. Please log in.')
 class Registration(Resource):
@@ -19,7 +22,6 @@ class Registration(Resource):
     @api.expect(email_and_password)
     def post(self):
         """Handle POST request at /auth/register."""
-
         post_data = request.json
         email = post_data.get('email')
         password = post_data.get('password')
@@ -32,7 +34,9 @@ class Registration(Resource):
 
         elif not password_is_valid(password):
             response = {
-                'message': 'Your password should contain at least one number, one lowercase, one uppercase letter and at least six characters'
+                'message': 'Your password should contain at least one number, \
+                            one lowercase, one uppercase letter and at least \
+                            six characters'
             }
             return response, 400
 
@@ -72,8 +76,7 @@ class Login(Resource):
 
     @api.expect(email_and_password)
     def post(self):
-        """Handle POST request for /auth/login"""
-
+        """Handle POST request for /auth/login."""
         post_data = request.json
         email = post_data.get('email')
         password = post_data.get('password')
@@ -84,7 +87,7 @@ class Login(Resource):
 
             # Try to authenticate the found user using their password
             if user and user.is_registered_password(password):
-                # Generate the access token. This will be used as the authorization header
+                # Generate the access token.
                 access_token = user.generate_token(user.id)
                 if access_token:
                     response = {
@@ -104,7 +107,7 @@ class Login(Resource):
             response = {
                 'message': str(e)
             }
-            # Return a server error using the HTTP Error Code 500 (Internal Server Error)
+
             return response, 500
 
 
