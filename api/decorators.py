@@ -6,6 +6,7 @@ from models.models import User
 
 
 def check_access_token(func):
+    """Ensure a function can only be executed if there is a token."""
     @wraps(func)
     def wrapper(*args, **kwargs):
         access_token = request.headers.get('Authorization')
