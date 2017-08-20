@@ -49,7 +49,8 @@ one lowercase, one uppercase letter and at least six characters'
                     user.save()
 
                     response = {
-                        'message': 'You registered successfully. Please log in.'
+                        'message':
+                        'You registered successfully. Please log in.'
                     }
                     return response, 201
 
@@ -111,7 +112,8 @@ class Login(Resource):
 
 def email_is_valid(email):
     """Check that the user's email is valid."""
-    return re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
+    return re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                    email)
 
 
 def password_is_valid(password):

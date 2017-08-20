@@ -58,8 +58,7 @@ class ItemsManipulation(Resource):
                 # There is no bucketlist with this ID for this User, so
                 # Raise an HTTPException with a 404 not found status code
             else:
-                abort(404, 'There is no bucketlist item with id '
-                      + str(item_id))
+                abort(404, 'There is no bucket item with id ' + str(item_id))
 
     @check_access_token
     def delete(self, id, item_id):
