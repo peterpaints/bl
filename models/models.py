@@ -1,14 +1,15 @@
 import os
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-import jwt
 from datetime import datetime, timedelta
+
+import jwt
+from flask_bcrypt import Bcrypt
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
 
 class User(db.Model):
-    """This class defines the users table """
+    """Define the users' table."""
 
     __tablename__ = 'users'
 
@@ -24,22 +25,21 @@ class User(db.Model):
         self.email = email
         self.password = Bcrypt().generate_password_hash(password).decode()
 
-    def password_is_valid(self, password):
-        """
-        Checks the password against its hash to validates the user's password
-        """
+    def is_registered_password(self, password):
+        """Check the password against its hash."""
         return Bcrypt().check_password_hash(self.password, password)
 
     def save(self):
-        """Save a user to the database.
+        """
+        Save a user to the database.
+
         This includes creating a new user and editing one.
         """
         db.session.add(self)
         db.session.commit()
 
     def generate_token(self, user_id):
-        """ Generates the access token"""
-
+        """Generate the access token."""
         try:
             # set up a payload with an expiration time
             payload = {
@@ -61,7 +61,7 @@ class User(db.Model):
 
     @staticmethod
     def decode_token(token):
-        """Decodes the access token from the Authorization header."""
+        """Decode the access token from the Authorization header."""
         try:
             # try to decode the token using our SECRET variable
             payload = jwt.decode(token, os.getenv('SECRET'))
@@ -75,14 +75,15 @@ class User(db.Model):
 
 
 class Bucketlist(db.Model):
-    """This class represents the bucketlist table."""
+    """Define the bucketlist table."""
 
     __tablename__ = 'bucketlists'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    items = db.relationship(
-        'Item', order_by='Item.id', cascade="all, delete-orphan", backref='bucketlists')
+    items = db.relationship('Item', order_by='Item.id',
+                            cascade="all, delete-orphan",
+                            backref='bucketlists', lazy='dynamic')
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
@@ -100,7 +101,7 @@ class Bucketlist(db.Model):
 
     @staticmethod
     def get_all(user_id):
-        """This method gets all the bucketlists for a given user."""
+        """Get all the bucketlists for a given user."""
         return Bucketlist.query.filter_by(created_by=user_id)
 
     def delete(self):
@@ -112,7 +113,7 @@ class Bucketlist(db.Model):
 
 
 class Item(db.Model):
-    """This class represents the bucketlist item table."""
+    """Define the bucketlist item table."""
 
     __tablename__ = 'items'
 
@@ -123,21 +124,22 @@ class Item(db.Model):
         db.DateTime, default=db.func.current_timestamp(),
         onupdate=db.func.current_timestamp())
     done = db.Column(db.Boolean, default=False)
-    bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id'), nullable=False)
+    bucketlist_id = db.Column(
+                    db.Integer, db.ForeignKey(Bucketlist.id), nullable=False)
 
-    def __init__(self, name, done=False):
+    def __init__(self, name, bucketlist_id):
         """Initialize the item with a name and its done status."""
         self.name = name
-        self.done = done
+        self.bucketlist_id = bucketlist_id
 
     def save(self):
         db.session.add(self)
         db.session.commit()
 
     @staticmethod
-    def get_all(user_id):
-        """This method gets all the bucketlist items for a given bucketlist."""
-        return Bucketlist.query.filter_by(bucketlist_id=bucketlist_id)
+    def get_all(bucketlist_id):
+        """Get all the bucketlist items for a given bucketlist."""
+        return Item.query.filter_by(bucketlist_id=bucketlist_id)
 
     def delete(self):
         db.session.delete(self)

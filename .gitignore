@@ -11,6 +11,7 @@
 # Folders #
 ###################
 benv/
+.vscode
 include/
 lib/
 .cache/
